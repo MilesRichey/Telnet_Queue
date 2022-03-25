@@ -1,5 +1,7 @@
 package co.raring.telnetqueue;
 
+import co.raring.telnetqueue.jna.JNAReg;
+import co.raring.telnetqueue.tool.LogViewAppender;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -7,33 +9,39 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class TQMain extends Application {
+    // Debug Options
+    private static final boolean QUERY = true; // TRUE=Query PuTTY Registry,FALSE=Use predefined utility configurations
+
     public static Logger LOGGER;
+    public static Map<String, String> SESSIONS;
+    public static List<Thread> QUEUES = new ArrayList<>();
+
 
     public static void main(String[] args) {
         LOGGER = Logger.getLogger(TQMain.class);
-        //LOGGER.addAppender(new ConsoleAppender());
-        LOGGER.setLevel(Level.DEBUG);
-        launch();
-    }
+        //LOGGER.addAppender(new LogViewAppender());
+        LOGGER.setLevel(Level.TRACE);
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        LOGGER.debug("Initializing TelnetQueue GUI");
-        FXMLLoader fxmlLoader = new FXMLLoader(TQMain.class.getResource("tq-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), stage.getWidth(), stage.getHeight());
-        stage.setTitle("Telnet Queue");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.getIcons().add(new Image(TQMain.class.getResourceAsStream("zenner.png")));
-        stage.show();
-        LOGGER.debug("Finished initializing TelnetQueue GUI");
+        if (QUERY) {
+            SESSIONS = JNAReg.getSessions();
+        } else {
+            // Predefined Utility configuration for testing purposes
+            SESSIONS = Map.of(
+                    //"Addison Training", "10.1.9.10:3221",
+                    "ZennerTest01", "10.1.9.32:3500");
+        }
+
+        launch();
     }
 
     /**
@@ -55,11 +63,11 @@ public class TQMain extends Application {
      * @param content Message to be displayed on the informational popup
      */
     public static void showMessage(String content) {
-        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION);
+        Alert msgBox = new Alert(Alert.AlertType.INFORMATION);
         LOGGER.debug("Showing informational dialog(\"" + content + "\")");
         //errorAlert.setHeaderText("File error");
-        errorAlert.setContentText(content);
-        errorAlert.showAndWait();
+        msgBox.setContentText(content);
+        msgBox.showAndWait();
     }
 
     /**
@@ -74,5 +82,24 @@ public class TQMain extends Application {
         alert.showAndWait();
 
         return alert.getResult() == ButtonType.YES;
+    }
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        LOGGER.debug("Initializing TelnetQueue GUI");
+        FXMLLoader fxmlLoader = new FXMLLoader(TQMain.class.getResource("tq-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), stage.getWidth(), stage.getHeight());
+        //
+        stage.setTitle("Telnet Queue v1.0.4");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zenner.png"))));
+        stage.setOnCloseRequest((event) -> {
+            for (Thread th : QUEUES) {
+                th.stop();
+            }
+        });
+        stage.show();
+        LOGGER.debug("Finished initializing TelnetQueue GUI");
     }
 }

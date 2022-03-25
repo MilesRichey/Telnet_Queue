@@ -36,8 +36,12 @@ public class JNAReg {
                 key = key.replaceAll("%20", " ");
                 host = Advapi32Util.registryGetStringValue(HKEY_CURRENT_USER, fullPath, "HostName");
                 port = Advapi32Util.registryGetIntValue(HKEY_CURRENT_USER, fullPath, "PortNumber");
-                ent.put(key, host + ":" + port);
-            } else TQMain.LOGGER.warn(String.format("Invalid Zenner PuTTY Session found %s @ (%s:%d)\n", key, host, port));
+                if (!host.isEmpty() || port > 1) {
+                    ent.put(key, host + ":" + port);
+                }
+                continue;
+            }
+            TQMain.LOGGER.warn(String.format("Invalid Zenner PuTTY Session found %s @ (%s:%d)\n", key, host, port));
         }
         TQMain.LOGGER.info(String.format("Finished querying PuTTY Sessions(%dms)\n", System.currentTimeMillis() - time));
         return ent;

@@ -13,4 +13,7 @@
       <module name="TelnetQueue" target="17" />
     </bytecodeTargetLevel>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="--module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml" />
+  </component>
 </project>
