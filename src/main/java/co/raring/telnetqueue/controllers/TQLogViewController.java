@@ -16,6 +16,9 @@ public class TQLogViewController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         LogViewAppender.setTextArea(logBox);
+        logBox.textProperty().addListener((e) -> {
+            logBox.setScrollTop(Double.MAX_VALUE);
+        });
         //logBox.setText("Work in Progress...");
     }
 }

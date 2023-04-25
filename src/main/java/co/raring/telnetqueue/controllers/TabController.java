@@ -1,7 +1,9 @@
 package co.raring.telnetqueue.controllers;
 
 import co.raring.telnetqueue.TQMain;
+import co.raring.telnetqueue.tool.FileHelper;
 import co.raring.telnetqueue.tool.LogViewAppender;
+import co.raring.telnetqueue.tool.QConfiguration;
 import co.raring.telnetqueue.tool.Telnet;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -23,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -34,6 +38,7 @@ public class TabController implements Initializable {
     //private static final boolean QUERY = true; // TRUE=Query PuTTY Registry,FALSE=Use predefined utility configurations
     private static final int WAIT_MULTIPLIER = 60000; // Multiplier for Queue Wait, 60000 = 1 minute
     private static final long COMMAND_TIMEOUT = (1000 * 60) * 120; // Command timeout in MS, 1000*60*120=2 hours
+    //private static final long COMMAND_TIMEOUT = 5000; // 5 Second debug time
 
     @FXML
     private AnchorPane ap;
@@ -60,11 +65,14 @@ public class TabController implements Initializable {
 
     private File miuFile;
     private List<String> miuList;
+    private QConfiguration savedConfiguration;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set Top Logo to Zenner
         zennerLogo.setImage(new Image(TQMain.class.getResourceAsStream("zlogo.png")));
+
+        savedConfiguration = new QConfiguration();
 
         clientList.setItems(FXCollections.observableList(new ArrayList<>(TQMain.SESSIONS.keySet())));
         clientList.getSelectionModel().select(0);
@@ -92,9 +100,16 @@ public class TabController implements Initializable {
 
     }
 
+    // TODO: Complete this configuration saving/loading procedure. Also, implement buttons for these features
+    protected void onLoad() {
+        //blah blah QConfiguration loading
+    }
+    protected void onSave() {
+
+    }
+
     @FXML
     protected void onLogView() {
-        AnchorPane consAp = null;
         try {
             //consAp = new AnchorPane(FXMLLoader.load(TQMain.class.getResource("tq-tab.fxml")));
             Stage stg = new Stage();
@@ -115,20 +130,25 @@ public class TabController implements Initializable {
 
     @FXML
     protected void onClientAction() throws IOException {
-        String[] conn = TQMain.SESSIONS.get(clientList.getValue()).split(":");
-        Telnet tel = new Telnet(conn[0], Integer.parseInt(conn[1]));
-        tel.init();
-        ObservableList<String> gws = FXCollections.observableList(tel.readGateways());
-        for (Iterator<String> it = gws.iterator(); it.hasNext(); ) {
-            String gw = it.next();
-            if (gw.endsWith("(OFFLINE)")) {
-                TQMain.LOGGER.warn("Removing offline collector from gwList: " + gw + " @ " + clientList.getValue());
-                it.remove();
+        try {
+            String[] conn = TQMain.SESSIONS.get(clientList.getValue()).split(":");
+            Telnet tel = new Telnet(conn[0], Integer.parseInt(conn[1]));
+            tel.init();
+
+            ObservableList<String> gws = FXCollections.observableList(tel.readGateways());
+            for (Iterator<String> it = gws.iterator(); it.hasNext(); ) {
+                String gw = it.next();
+                if (gw.endsWith("(OFFLINE)") || gw.endsWith("NOT CONNECTED")) {
+                    TQMain.LOGGER.warn("Removing offline collector from gwList: " + gw + " @ " + clientList.getValue());
+                    it.remove();
+                }
             }
+            gws.add("All");
+            gwList.setItems(gws);
+            tel.close();
+        } catch(ConnectException ex) {
+            TQMain.throwError("Error while connecting to utility, please verify the connection is still valid.", ex);
         }
-        gws.add("All");
-        gwList.setItems(gws);
-        tel.close();
     }
 
     @FXML
@@ -150,7 +170,7 @@ public class TabController implements Initializable {
         miuList = new ArrayList<>();
         if (this.miuFile != null) {
             TQMain.LOGGER.debug("Using File: " + chosenFile.getText());
-            String miuContents = readFile(this.miuFile);
+            String miuContents = FileHelper.readFile(this.miuFile);
             // Allow both newline and comma csv delimiter
             if (miuContents != null) {
                 if (miuContents.contains(",")) {
@@ -179,6 +199,11 @@ public class TabController implements Initializable {
             TQMain.LOGGER.debug("Queue Wait: " + queueWait.getValue());
         }
 
+        if(gwList.getValue().isEmpty()) {
+            TQMain.throwError("Please select a gateway", new IllegalArgumentException());
+            return;
+        }
+
         TQMain.LOGGER.info(String.format("Starting connection to %s(%s) @ %s\n", clientList.getValue(), TQMain.SESSIONS.get(clientList.getValue()), gwList.getValue()));
 
 
@@ -191,13 +216,14 @@ public class TabController implements Initializable {
         final double[] time = new double[1];
 
 
-        Task<Void> sleeper = new Task<>() {
+        Task<Void> sleeper = new Task<Void>() {
             @Override
             protected Void call() {
                 try {
                     // Start process timer
                     time[0] = System.currentTimeMillis();
 
+                    List<String> noResponses = new ArrayList<>();
 
                     // Select Gateway
                     String[] split = commandList.getText().split("\n");
@@ -238,19 +264,25 @@ public class TabController implements Initializable {
                                     progressLabel.setText("Progress: " + Math.round(progress * 100) + "%");
                                     timeLabel.setText("Time Remaining: " + finalTimeRemaining + " minutes");
                                 });
-                                if (WAIT_FOR_RESPONSE) {
+                                String targetMiu = command.split(" ")[1];
+                                if (WAIT_FOR_RESPONSE && !targetMiu.equals("-1")) {
                                     TQMain.LOGGER.info("Executing command and waiting for response");
-                                    if (miuList.isEmpty()) {
-                                        if (command.startsWith("rexec")) {
-                                            TQMain.LOGGER.debug("Response Received: " + tel.sendMIUCommand(command, command.split(" ")[1], COMMAND_TIMEOUT));
-                                        } else
-                                            TQMain.LOGGER.debug("Response Received: " + tel.sendMIUCommand(command, "\n", COMMAND_TIMEOUT));
-                                    } else tel.sendMIUCommand(command, miuList.get(j), COMMAND_TIMEOUT);
+                                    String term = !miuList.isEmpty() ? miuList.get(j) : (command.startsWith("rexec") ? command.split(" ")[1] : "\n");
+                                    String resp = tel.sendMIUCommand(command, term, COMMAND_TIMEOUT);
+                                    if(resp.equals("Timeout")) {
+                                        noResponses.add(term);
+                                        TQMain.LOGGER.warn(String.format("Unable to get response from %s after %d minutes", term, COMMAND_TIMEOUT/1000/60));
+                                        Platform.runLater(()->{
+                                            TQMain.showMessage(String.format("Unable to get response from %s after %d minutes", term, COMMAND_TIMEOUT/1000/60));
+                                        });
+                                    } else {
+                                        TQMain.LOGGER.debug("Response Received: " + resp);
+                                    }
                                 } else {
                                     tel.sendCommand(command);
                                     // TODO: Prevent sleep after last command is issued
                                     TQMain.LOGGER.info("Performing sleep for " + queueWait.getValue() * WAIT_MULTIPLIER + "ms");
-                                    Thread.sleep((long) queueWait.getValue() * WAIT_MULTIPLIER);
+                                    Thread.sleep((targetMiu.equals("-1")) ? 0 : (long) queueWait.getValue() * WAIT_MULTIPLIER);
                                 }
                             }
                         }
@@ -262,6 +294,19 @@ public class TabController implements Initializable {
                     }
                     TQMain.LOGGER.info("Closing Connection for " + clientList.getValue());
                     tel.close();
+                    if(!noResponses.isEmpty()) {
+                        TQMain.LOGGER.warn("Timeout Nodes: " + Arrays.toString(noResponses.toArray()));
+                        File jarPath = new File(System.getProperty("user.dir") + File.separator + "unresponsiveNodes.csv");
+                        TQMain.LOGGER.info("Logged timeout nodes to " + jarPath.getAbsolutePath());
+                        StringBuilder append = new StringBuilder();
+                        for(int i = 0; i < noResponses.size(); i++) {
+                            append.append(noResponses.get(i));
+                            if(i != noResponses.size()-1) {
+                                append.append(",");
+                            }
+                        }
+                        FileHelper.appendFile(jarPath, append.toString());
+                    }
                 } catch (IOException ex) {
                     TQMain.throwError("Error while closing connection", ex);
                 } catch (InterruptedException ex) {
@@ -274,35 +319,11 @@ public class TabController implements Initializable {
 
         sleeper.setOnSucceeded(wse -> {
             double timeSec = (System.currentTimeMillis() - time[0]) / 1000F;
-            TQMain.LOGGER.info(String.format("Successfully executed commands. Process took %.2f seconds", timeSec));
-            TQMain.showMessage(String.format("Successfully executed commands.\nProcess took %.2f seconds", timeSec));
+            TQMain.showMessage(String.format("Successfully executed commands. Process took %.2f seconds", timeSec));
         });
         // TODO: Add Pause, Resume, Stop functionality
         Thread sleeperThread = new Thread(sleeper);
         TQMain.QUEUES.add(sleeperThread);
         sleeperThread.start();
-    }
-
-    /**
-     * Method to read a files content and show an error message if it's not possible
-     *
-     * @param file File to read data from
-     * @return The contents of @file, or null if an exception is caught
-     */
-    // Non-FXML Methods
-    private String readFile(File file) {
-        StringBuilder fileContents = new StringBuilder();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String buffer;
-            while ((buffer = br.readLine()) != null) {
-                fileContents.append(buffer);
-                fileContents.append("\n");
-            }
-        } catch (IOException e) {
-            TQMain.throwError("Unable to access file '" + chosenFile.getText() + "'", e);
-            return null;
-        }
-        return fileContents.toString();
     }
 }

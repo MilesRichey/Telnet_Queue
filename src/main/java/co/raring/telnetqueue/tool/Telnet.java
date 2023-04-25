@@ -20,8 +20,8 @@ public class Telnet {
     private BufferedReader br;
     private PrintWriter out;
 
-    private Set<TReadHandler> handlers;
-    private Set<TReadHandler> handRemove;
+    private Set<IReadHandler> handlers;
+    private Set<IReadHandler> handRemove;
     private boolean readerRun = false;
     private final Thread reader = new Thread(() -> {
         while (readerRun) {
@@ -33,13 +33,13 @@ public class Telnet {
                         handlers.removeAll(handRemove);
                         handRemove.clear();
                     }
-                    for (TReadHandler handler : handlers) {
+                    for (IReadHandler handler : handlers) {
                         handler.onResponse(line);
                     }
                 }
-                //if (!br.ready()) readerRun = false;
+                // if (!br.ready()) readerRun = false;
             } catch (IOException e) {
-                e.printStackTrace();
+                TQMain.LOGGER.error(e);
             }
 
         }
@@ -65,7 +65,7 @@ public class Telnet {
         // Add default listener to print to the console
         this.handRemove = new HashSet<>();
         this.handlers = new HashSet<>();
-        TReadHandler defaultHandler = (res) -> {
+        IReadHandler defaultHandler = (res) -> {
             readerOut.append(res).append("\n");
             TQMain.LOGGER.trace(res);
         };
@@ -92,7 +92,14 @@ public class Telnet {
         out.print(comm + "\r\n");
         out.flush();
     }
+/*
+Example of interaction between command and MIU:
 
+rexec 2390137 "date"
+
+[2390137] FRI 03/25/2022 21:20:02 (tz=-7) Y2K
+
+*/
     public String sendMIUCommand(String comm, String miu, long timeout) {
         sendCommand(comm);
         if (!miu.contains("\n")) {
@@ -102,18 +109,18 @@ public class Telnet {
         return readUntil(miu, timeout);
     }
 
-    public void addListener(TReadHandler handler) {
+    public void addListener(IReadHandler handler) {
         this.handlers.add(handler);
     }
 
-    public void removeListener(TReadHandler handler) {
+    public void removeListener(IReadHandler handler) {
         //this.handlers.remove(handler);
         this.handRemove.add(handler);
     }
 
     public String readUntil(String pattern, long timeoutMs) {
         StringBuilder buffer = new StringBuilder();
-        TReadHandler temp = (res) -> {
+        IReadHandler temp = (res) -> {
             if (res.contains(pattern)) {
                 buffer.append("\u001a");
             }
@@ -122,9 +129,11 @@ public class Telnet {
         long currentTime = System.currentTimeMillis();
         // Wait for buffer to contain the defined EOF
         while (!buffer.toString().contains("\u001a")) {
-            if (timeoutMs != -1 && (currentTime - System.currentTimeMillis()) >= timeoutMs) {
+            if (timeoutMs != -1 && (System.currentTimeMillis() - currentTime) >= timeoutMs) {
                 TQMain.LOGGER.warn("Timeout reached with read pattern of: " + pattern);
-                return "TQ: Timeout Reached";
+                removeListener(temp);
+                buffer.append("\u001a");
+                return "Timeout";
             }
         }
         removeListener(temp);
@@ -133,9 +142,10 @@ public class Telnet {
 
     public List<String> readGateways() {
         List<String> li = new ArrayList<>();
-        TReadHandler temp = (res) -> {
-            if (res.length() < 21 && res.startsWith("     ")) {
-                if (res.substring(13).contains("OFFLINE")) {
+        IReadHandler temp = (res) -> {
+            if (res.length() < 27 && res.startsWith("     ")) {
+                String stripped = res.substring(13);
+                if (stripped.contains("OFFLINE") || stripped.contains("NOT CONNECTED")) {
                     li.add(res.substring(5, 10) + " (OFFLINE)");
                 } else {
                     li.add(res.substring(5, 10));
@@ -144,7 +154,7 @@ public class Telnet {
         };
         addListener(temp);
         sendCommand("c status");
-        readUntil("Database Status: OK", 1000);
+        readUntil("Database Status: OK", 3000);
         removeListener(temp);
         return li;
     }

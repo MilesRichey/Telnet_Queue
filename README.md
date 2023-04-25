@@ -111,8 +111,11 @@ Starts sending commands to the given parameters
 * Added View Log button to see Collector output, currently Work-in-Progress. Log will currently only show events that happen after the log is opened.
 Logging currently merges both Telnet Queue logs and response back from the connection.
 
+1.0.6:
+* Added compatibility with Collector Service 2.4.0
+
 ## Plans
 In the future I plan on adding a few features:
-1. Improved logging screen
+1. Improved logging screen/persistent logging
 2. Ability to Save and Open Telnet Queue configuration
-3. Come up with a better name
+3. Add gateway/utility to the tab

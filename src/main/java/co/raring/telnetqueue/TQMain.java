@@ -90,7 +90,7 @@ public class TQMain extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(TQMain.class.getResource("tq-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), stage.getWidth(), stage.getHeight());
         //
-        stage.setTitle("Telnet Queue v1.0.4");
+        stage.setTitle("Telnet Queue v1.0.6b");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.getIcons().add(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zenner.png"))));
