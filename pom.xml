@@ -6,7 +6,7 @@
 
     <groupId>co.raring</groupId>
     <artifactId>TelnetQueue</artifactId>
-    <version>1.0.6b</version>
+    <version>1.0.7</version>
     <name>TelnetQueue</name>
 
     <properties>

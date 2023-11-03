@@ -2,7 +2,10 @@ package co.raring.telnetqueue;
 
 import co.raring.telnetqueue.jna.JNAReg;
 import co.raring.telnetqueue.tool.LogViewAppender;
+import co.raring.telnetqueue.tool.Telnet;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -12,16 +15,17 @@ import javafx.stage.Stage;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.net.ConnectException;
+import java.util.*;
 
 public class TQMain extends Application {
     // Debug Options
     private static final boolean QUERY = true; // TRUE=Query PuTTY Registry,FALSE=Use predefined utility configurations
-
+    // Active status, if set to false then all running threads(queues) will stop
+    public static  boolean ACTIVE = true;
     public static Logger LOGGER;
     public static Map<String, String> SESSIONS;
     public static List<Thread> QUEUES = new ArrayList<>();
@@ -80,7 +84,6 @@ public class TQMain extends Application {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, content, ButtonType.YES, ButtonType.NO);
         LOGGER.debug("Showing confirmation dialog(\"" + content + "\")");
         alert.showAndWait();
-
         return alert.getResult() == ButtonType.YES;
     }
 
@@ -90,13 +93,13 @@ public class TQMain extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(TQMain.class.getResource("tq-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), stage.getWidth(), stage.getHeight());
         //
-        stage.setTitle("Telnet Queue v1.0.6b");
+        stage.setTitle("Telnet Queue v1.0.8b");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.getIcons().add(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zenner.png"))));
         stage.setOnCloseRequest((event) -> {
             for (Thread th : QUEUES) {
-                th.stop();
+                TQMain.ACTIVE = false;
             }
         });
         stage.show();

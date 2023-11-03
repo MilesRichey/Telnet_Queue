@@ -1,4 +1,5 @@
 # Project exclude paths
 /out/
 /target/
-/src/main/java/co/raring/telnetqueue/tool/TelCollector.java
+/src/main/java/co/raring/telnetqueue/test/
+/src/main/java/test/

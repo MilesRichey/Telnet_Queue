@@ -9,8 +9,5 @@
         <module name="TelnetQueue" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="TelnetQueue" target="11" />
-    </bytecodeTargetLevel>
   </component>
 </project>

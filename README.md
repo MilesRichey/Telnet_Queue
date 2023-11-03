@@ -22,6 +22,13 @@ the command entered(replacing ***$1*** with each entry)
 
 This lists all available PuTTY sessions, which should contain mostly utility/client collector connections.
 
+## Run Test
+
+The "Run Test" button will run a test against all available PuTTY sessions, 
+then output the non-operational(unable to get a connection after 2000ms) utilities in a file.
+
+The file will be opened automatically, and saved to the same directory Telnet Queue is located. 
+
 ## Gateways
 
 Once a Client is selected, this will show all __online__ gateways. 
@@ -113,6 +120,13 @@ Logging currently merges both Telnet Queue logs and response back from the conne
 
 1.0.6:
 * Added compatibility with Collector Service 2.4.0
+
+1.07:
+* Updated connection issue message to include PuTTY service name in addition to the IP address and port
+* Added display message whenever a connection is established, but no gateway connections found.
+
+1.0.8b (W.I.P):
+* Added "Run Test" button to go through all PuTTY sessions, and output all non-operational sessions in a file.
 
 ## Plans
 In the future I plan on adding a few features:

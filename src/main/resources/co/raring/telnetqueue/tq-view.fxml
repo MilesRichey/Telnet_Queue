@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<TabPane xmlns:fx="http://javafx.com/fxml/1" fx:id="tabPane" prefHeight="410.0" prefWidth="430.0"
-         tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16"
-         fx:controller="co.raring.telnetqueue.controllers.TQController">
+<?import javafx.scene.control.*?>
+
+<TabPane fx:id="tabPane" prefHeight="410.0" prefWidth="430.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.raring.telnetqueue.controllers.TQController">
     <tabs>
-        <Tab text="New Queue"/>
+        <Tab text="New Queue" />
     </tabs>
 </TabPane>

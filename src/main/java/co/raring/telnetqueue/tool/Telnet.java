@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,14 +53,17 @@ public class Telnet {
         this.host = host;
         this.port = port;
     }
-
     public boolean init() {
+        return init(2000);
+    }
+    public boolean init(int timeout)  {
         try {
-            this.sock = new Socket(this.host, this.port);
+            this.sock = new Socket();
+            this.sock.connect(new InetSocketAddress(this.host, this.port), timeout);
             this.out = new PrintWriter(this.sock.getOutputStream(), true);
             this.br = new BufferedReader(new InputStreamReader(this.sock.getInputStream()));
         } catch (IOException ex) {
-            TQMain.throwError("Error while initializing connection to " + this.host + ":" + this.port, ex);
+            //TQMain.throwError("Error while initializing connection to " + this.host + ":" + this.port, ex);
             return false;
         }
 

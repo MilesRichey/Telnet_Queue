@@ -35,11 +35,13 @@ public class QConfiguration {
     private int i = 0;
     private int j = 0;
     private int z = 0;
+
     public static void main(String... args) throws IOException {
         QConfiguration c = new QConfiguration(new File("C:\\Users\\mrichey\\Dropbox (ZennerUSA)\\Richey-Miles\\Projects\\TelnetQueue\\src\\main\\resources\\exampleConfig.properties"));
         System.out.println(c.toString());
 
     }
+
     public QConfiguration() {
 
     }
@@ -82,7 +84,10 @@ public class QConfiguration {
     public int getJ() {
         return this.j;
     }
-    public void setJ(int j) {this.j = j;}
+
+    public void setJ(int j) {
+        this.j = j;
+    }
 
     /**
      * If GW is set to ALL, then an iteration will occur(z>=0 | z < totalGateways) ~ Else: z=0
@@ -92,7 +97,10 @@ public class QConfiguration {
     public int getZ() {
         return this.z;
     }
-    public void setZ(int z) {this.z = z;}
+
+    public void setZ(int z) {
+        this.z = z;
+    }
 
     /**
      * Simple getter for wait period
@@ -102,7 +110,10 @@ public class QConfiguration {
     public int getWaitPeriod() {
         return this.waitPeriod;
     }
-    public void setWaitPeriod(int wait) { this.waitPeriod = wait;}
+
+    public void setWaitPeriod(int wait) {
+        this.waitPeriod = wait;
+    }
 
     /**
      * Simple getter for commands
@@ -112,7 +123,11 @@ public class QConfiguration {
     public String[] getCommands() {
         return this.commands;
     }
-    public void setCommands(String[] commands) {this.commands = commands;}
+
+    public void setCommands(String[] commands) {
+        this.commands = commands;
+    }
+
     /**
      * Simple getter for MIU list, possible to return null.
      *
@@ -121,7 +136,10 @@ public class QConfiguration {
     public String[] getMIUList() {
         return this.miuList;
     }
-    public void setMIUList(String[] miuList) { this.miuList = miuList;}
+
+    public void setMIUList(String[] miuList) {
+        this.miuList = miuList;
+    }
 
     /**
      * Simple getter for the selected gateway
@@ -131,6 +149,7 @@ public class QConfiguration {
     public String getGW() {
         return this.gw;
     }
+
     public void setGW(String gw) {
         this.gw = gw;
     }
@@ -143,15 +162,19 @@ public class QConfiguration {
     public String getClient() {
         return this.client;
     }
+
     public void setClient(String client) {
         this.client = client;
     }
+
     public boolean isResponseBased() {
         return responseBased;
     }
+
     public void setResponseBased(boolean respBased) {
         this.responseBased = respBased;
     }
+
     @Override
     public String toString() {
         return new StringBuilder("{\n")
