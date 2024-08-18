@@ -24,8 +24,7 @@ import java.util.*;
 public class TQMain extends Application {
     // Debug Options
     private static final boolean QUERY = true; // TRUE=Query PuTTY Registry,FALSE=Use predefined utility configurations
-    // Active status, if set to false then all running threads(queues) will stop
-    public static  boolean ACTIVE = true;
+    public static boolean ACTIVE = true; // Active status, if set to false then all running threads(queues) will stop
     public static Logger LOGGER;
     public static Map<String, String> SESSIONS;
     public static List<Thread> QUEUES = new ArrayList<>();
@@ -36,13 +35,13 @@ public class TQMain extends Application {
         //LOGGER.addAppender(new LogViewAppender());
         LOGGER.setLevel(Level.TRACE);
 
-        if (QUERY) {
-            SESSIONS = JNAReg.getSessions();
-        } else {
+        if (!QUERY || !System.getProperty("os.name").contains("Windows")) {
             // Predefined Utility configuration for testing purposes
             SESSIONS = Map.of(
                     //"Addison Training", "10.1.9.10:3221",
                     "ZennerTest01", "10.1.9.32:3500");
+        } else {
+            SESSIONS = JNAReg.getSessions();
         }
 
         launch();
@@ -98,7 +97,7 @@ public class TQMain extends Application {
         stage.setResizable(false);
         stage.getIcons().add(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zenner.png"))));
         stage.setOnCloseRequest((event) -> {
-            for (Thread th : QUEUES) {
+            for (Thread th : QUEUES) { //TODO: Add actual thread stops
                 TQMain.ACTIVE = false;
             }
         });

@@ -1,5 +1,34 @@
 # Project exclude paths
-/out/
 /target/
-/src/main/java/co/raring/telnetqueue/test/
-/src/main/java/test/
+
+# Ignore build directories and generated files
+/build/
+/out/
+distributions/
+**/generated/
+
+# Ignore Gradle-specific files
+.gradle/
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper.properties
+
+# Ignore IntelliJ IDEA-specific files
+.idea/
+/*.iml
+*.ipr
+*.iws
+
+# Ignore logs
+*.log
+
+# Ignore compiled Java class files
+*.class
+
+# Ignore packaged files
+*.jar
+*.exe
+*.zip
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
