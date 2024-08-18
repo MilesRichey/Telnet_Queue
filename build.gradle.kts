@@ -30,10 +30,11 @@ repositories {
 
 dependencies {
     // Log4J
-    implementation("log4j:log4j:1.2.17")
+    // implementation("log4j:log4j:1.2.17")
     // Log4J 2
-    //implementation("org.apache.logging.log4j:log4j-api:2.23.1")
-    //implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.23.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+    //annotationProcessor("org.apache.logging.log4j:log4j-core:2.23.1")
 
     // JNA for Windows Registry
     implementation("net.java.dev.jna:jna:5.14.0")

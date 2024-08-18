@@ -9,6 +9,7 @@ import javafx.scene.control.TabPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class TQController implements Initializable {
@@ -20,7 +21,7 @@ public class TQController implements Initializable {
         newQueueTab();
         // Listen for Tab change, check if the new tab selected is "New Queue" then handle accordingly
         tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t1, t2) -> {
-            TQMain.LOGGER.trace(String.format("Tab Selection from %s to %s", t1.getText(), t2.getText()));
+            TQMain.LOGGER.trace("Tab Selection from {} to {}", t1.getText(), t2.getText());
             if (t2.getText().equals("New Queue")) {
                 tabPane.getSelectionModel().select(newQueueTab());
             }
@@ -32,7 +33,7 @@ public class TQController implements Initializable {
         Tab qt = new Tab();
         int index = tabPane.getTabs().size() - 1;
         try {
-            qt.setContent(FXMLLoader.load(TQMain.class.getResource("tq-tab.fxml")));
+            qt.setContent(FXMLLoader.load(Objects.requireNonNull(TQMain.class.getResource("tq-tab.fxml"))));
         } catch (IOException e) {
             TQMain.throwError("Error while loading Queue Tab template", e);
             TQMain.LOGGER.fatal("Error while loading Queue Tab template", e);

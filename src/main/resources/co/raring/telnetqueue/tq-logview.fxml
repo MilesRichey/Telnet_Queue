@@ -3,8 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.raring.telnetqueue.controllers.TQLogViewController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.raring.telnetqueue.controllers.TQLogViewController">
     <children>
-        <TextArea fx:id="logBox" prefHeight="401.0" prefWidth="600.0" />
+        <ListView prefHeight="350" prefWidth="600" fx:id="listViewLog" />
+        <ToolBar prefHeight="50" prefWidth="600">
+            <items>
+                <Button mnemonicParsing="false" onAction="#handleRemoveSelected" text="Remove Selected" />
+                <Button fx:id="buttonClearLog" mnemonicParsing="false" onAction="#handleClearLog" text="Clear" />
+                <ToggleButton fx:id="toggleButtonAutoScroll" mnemonicParsing="false" text="Auto-Scroll" />
+                <ChoiceBox fx:id="choiceBoxLogLevel" prefWidth="550.0" />
+            </items>
+        </ToolBar>
     </children>
 </AnchorPane>

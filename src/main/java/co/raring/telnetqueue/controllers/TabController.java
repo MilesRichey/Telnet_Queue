@@ -2,10 +2,8 @@ package co.raring.telnetqueue.controllers;
 
 import co.raring.telnetqueue.TQMain;
 import co.raring.telnetqueue.tool.FileHelper;
-import co.raring.telnetqueue.tool.LogViewAppender;
 import co.raring.telnetqueue.tool.QConfiguration;
 import co.raring.telnetqueue.tool.Telnet;
-import com.sun.jna.platform.unix.X11;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,11 +12,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -34,8 +31,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
@@ -76,7 +73,7 @@ public class TabController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set Top Logo to Zenner
-        zennerLogo.setImage(new Image(TQMain.class.getResourceAsStream("zlogo.png")));
+        zennerLogo.setImage(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zlogo.png"))));
 
         savedConfiguration = new QConfiguration();
 
@@ -109,10 +106,11 @@ public class TabController implements Initializable {
     // TODO: Complete this configuration saving/loading procedure. Also, implement buttons for these features
     protected void onLoad() {
         //blah blah QConfiguration loading
+        TQMain.throwError("Not currently implemented", null);
     }
 
     protected void onSave() {
-
+        TQMain.throwError("Not currently implemented", null);
     }
 
     @FXML
@@ -139,24 +137,25 @@ public class TabController implements Initializable {
                     Telnet tel = new Telnet(conn[0], Integer.parseInt(conn[1]));
                     if (tel.init(2000)) { // 2000ms Timeout Period
                         // Connection successful (Exclude working utilities)
-                        TQMain.LOGGER.debug("1," + k + "," + v + "\n");
+                        TQMain.LOGGER.debug("1,{},{}\n", k, v);
                         try {
                             tel.close();
-                        } catch (IOException ignored) {}
+                        } catch (IOException ignored) {
+                        }
                     } else {
                         // Connection failed
                         // "Utility Name","Connection String"
                         failedConns.append("\"").append(k).append("\",\"").append(v).append("\"\n");
                         failCount.getAndIncrement();
-                        TQMain.LOGGER.debug("0," + k + "," + v + "\n");
+                        TQMain.LOGGER.debug("0,{},{}\n", k, v);
                     }
                     // Update progress bar
                     float progress = (float) index.get() / sesSize;
-                    int timeRemaining = (int )Math.abs((sesSize*.15)-failCount.get()) * 2; // Assume 15% of utilities are non working, each of which has a 2 second timeout
-                    final String finTime = timeRemaining > 60 ? (timeRemaining/60) + " minutes " + (timeRemaining % 60) + " seconds" : timeRemaining + " seconds";
+                    int timeRemaining = (int) Math.abs((sesSize * .15) - failCount.get()) * 2; // Assume 15% of utilities are non working, each of which has a 2 second timeout
+                    final String finTime = timeRemaining > 60 ? (timeRemaining / 60) + " minutes " + (timeRemaining % 60) + " seconds" : timeRemaining + " seconds";
                     progressBar.setProgress(progress);
                     // Update progress text and time remaining
-                    Platform.runLater(()->{
+                    Platform.runLater(() -> {
                         progressLabel.setText("Progress: " + Math.round(progress * 100) + "%");
                         timeLabel.setText(String.format("Est Time Remaining: %s", finTime));
                     });
@@ -168,7 +167,7 @@ public class TabController implements Initializable {
         checkUtil.setOnSucceeded(e -> {
             // Erase progress bar before showing final messages
             progressBar.setProgress(0);
-            Platform.runLater(()->{
+            Platform.runLater(() -> {
                 progressLabel.setText("");
                 timeLabel.setText("");
             });
@@ -180,14 +179,15 @@ public class TabController implements Initializable {
 
             if (TQMain.showConfirmation("Found " + failCount.get() + " failed connections.\nWould you like to view the status file?")) {
                 boolean succ = false;
-                if(Desktop.isDesktopSupported()) {
+                if (Desktop.isDesktopSupported()) {
                     try {
                         Desktop.getDesktop().edit(outputFile);
                         succ = true;
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+                    }
                 }
                 // If unable to open the file successfully, then display unable to open and list the file location
-                if(!succ) {
+                if (!succ) {
                     TQMain.showMessage("Unable to open status file, located at " + outputFile.getAbsolutePath() + ".");
                 }
             } else { // If they don't want to view the status file, print out the location of the file
@@ -203,15 +203,15 @@ public class TabController implements Initializable {
         try {
             //consAp = new AnchorPane(FXMLLoader.load(TQMain.class.getResource("tq-tab.fxml")));
             Stage stg = new Stage();
-            AnchorPane ap = FXMLLoader.load(TQMain.class.getResource("tq-logview.fxml"));
+            AnchorPane ap = FXMLLoader.load(Objects.requireNonNull(TQMain.class.getResource("tq-logview.fxml")));
             stg.setScene(new Scene(ap));
             stg.show();
             /*stg.setOnShown((ev) -> {
                 //TQLogViewController.setText();
             });*/
-            stg.setOnCloseRequest((ev) -> {
-                LogViewAppender.closeArea();
-            });
+//            stg.setOnCloseRequest((ev) -> {
+//                LogViewAppender.closeArea();
+//            });
         } catch (IOException e) {
             TQMain.throwError("Error while displaying log view.", e);
         }
@@ -225,14 +225,14 @@ public class TabController implements Initializable {
             Telnet tel = new Telnet(conn[0], Integer.parseInt(conn[1]));
             String fullUtilConnName = clientList.getValue() + " (" + conn[0] + ":" + conn[1] + ")";
             if (!tel.init()) { // TODO: Handle error message better maybe
-                throw new ConnectException(fullUtilConnName);
+                throw new ConnectException(fullUtilConnName); // Telnet.init() will already show a dialog popup
             }
 
             ObservableList<String> gws = FXCollections.observableList(tel.readGateways());
             for (Iterator<String> it = gws.iterator(); it.hasNext(); ) {
                 String gw = it.next();
                 if (gw.endsWith("(OFFLINE)") || gw.endsWith("NOT CONNECTED")) {
-                    TQMain.LOGGER.warn("Removing offline collector from gwList: " + gw + " @ " + fullUtilConnName);
+                    TQMain.LOGGER.warn("Removing offline collector from gwList: {} @ {}", gw, fullUtilConnName);
                     it.remove();
                 }
             }
@@ -244,7 +244,7 @@ public class TabController implements Initializable {
             gwList.setItems(gws);
             tel.close();
         } catch (ConnectException ex) {
-            TQMain.throwError("Error while connecting to utility, please verify the connection is still valid.\n" + ex.getMessage(), ex);
+            TQMain.throwError("Error while connecting to utility, please verify the connection is still valid.\n" + ex.getMessage(), null);
         }
     }
 
@@ -266,7 +266,7 @@ public class TabController implements Initializable {
         // Allow execution without an MIU CSV List
         miuList = new ArrayList<>();
         if (this.miuFile != null) {
-            TQMain.LOGGER.debug("Using File: " + chosenFile.getText());
+            TQMain.LOGGER.debug("Using File: {}", chosenFile.getText());
             String miuContents = FileHelper.readFile(this.miuFile);
             // Allow both newline and comma csv delimiter
             if (miuContents != null) {
@@ -276,7 +276,7 @@ public class TabController implements Initializable {
                     miuList.addAll(Arrays.asList(miuContents.split("\n")));
                 }
             }
-            TQMain.LOGGER.debug("File Contents:\n" + miuList.toString());
+            TQMain.LOGGER.debug("File Contents:\n{}", miuList.toString());
         } else if (!TQMain.showConfirmation("Are you sure you want to run without an MIU list")) {
             return;
         }
@@ -286,14 +286,14 @@ public class TabController implements Initializable {
             TQMain.throwError("No command was entered!", new IllegalArgumentException());
             return;
         } else {
-            TQMain.LOGGER.debug("Command List: " + commandList.getText());
+            TQMain.LOGGER.debug("Command List: {}", commandList.getText());
         }
 
         // Queue Wait Logging / Initialization
         boolean WAIT_FOR_RESPONSE = ((RadioButton) waitMethod.getSelectedToggle()).getText().startsWith("Response");
-        TQMain.LOGGER.debug("Wait Method: " + ((RadioButton) waitMethod.getSelectedToggle()).getText());
+        TQMain.LOGGER.debug("Wait Method: {}", ((RadioButton) waitMethod.getSelectedToggle()).getText());
         if (!WAIT_FOR_RESPONSE) {
-            TQMain.LOGGER.debug("Queue Wait: " + queueWait.getValue());
+            TQMain.LOGGER.debug("Queue Wait: {}", queueWait.getValue());
         }
 
         if (gwList.getValue().isEmpty()) {
@@ -301,7 +301,7 @@ public class TabController implements Initializable {
             return;
         }
 
-        TQMain.LOGGER.info(String.format("Starting connection to %s(%s) @ %s\n", clientList.getValue(), TQMain.SESSIONS.get(clientList.getValue()), gwList.getValue()));
+        TQMain.LOGGER.info("Starting connection to {}({}) @ {}\n", clientList.getValue(), TQMain.SESSIONS.get(clientList.getValue()), gwList.getValue());
 
 
         // Initialize Telnet instance
@@ -326,7 +326,7 @@ public class TabController implements Initializable {
                     // Select Gateway
                     String[] split = commandList.getText().split("\n");
                     int gwMax = (gwList.getValue().equals("All") ? gwList.getItems().size() - 1/*Exclude GW "-1" */ : 1);
-                    int miuMax = (miuList.size() == 0 ? 1 : miuList.size());
+                    int miuMax = (miuList.isEmpty() ? 1 : miuList.size());
                     int commMax = split.length;
                     int totalIterations = commMax * miuMax * gwMax;
 
@@ -335,30 +335,27 @@ public class TabController implements Initializable {
 
                     // Iterate through all Gateways
                     for (int z = 0; z < gwMax; z++) {
-                        if(!TQMain.ACTIVE) return null;
+                        if (!TQMain.ACTIVE) return null;
                         // Select the proper gateway, if GW is set to -1 then TQ will iterate through each gateway under a specified utility
                         String currentGw = (gwList.getValue().equals("All")) ? gwList.getItems().get(z) : gwList.getValue();
-                        TQMain.LOGGER.info("Selecting Gateway: " + currentGw);
+                        TQMain.LOGGER.info("Selecting Gateway: {}", currentGw);
                         tel.sendCommand("c select " + currentGw);
 
                         // Iterate through each MIU listed in file, unless miuList is 0 then execute command once per gateway
                         for (int j = 0; j < miuMax; j++) {
-                            if(!TQMain.ACTIVE) return null;
+                            if (!TQMain.ACTIVE) return null;
                             // Iterate through all commands, and replace $1 with the respective MIU number if applicable
                             for (int i = 0; i < commMax; i++) {
                                 String command = split[i];
                                 command = command.contains("$1") ? command.replaceAll("\\$1", miuList.get(j)) : command;
-                                TQMain.LOGGER.info(String.format(
-                                        "Sending Command(GW: %s%s): %s",
-                                        currentGw, (miuMax != 1) ? ", MIU: " + miuList.get(j) : "", command
-                                ));
+                                TQMain.LOGGER.info("Sending Command(GW: {}{}): {}", currentGw, (miuMax != 1) ? ", MIU: " + miuList.get(j) : "", command);
                                 // Progress Bar Math
                                 double progress = ((i + 1D) * (j + 1D) * (z + 1D)) / totalIterations;
                                 progressBar.setProgress(progress);
                                 timeRemaining = timeRemaining - queueWait.getValue();
                                 int finalTimeRemaining = timeRemaining;
-                                TQMain.LOGGER.info(String.format("Progress: %.2f", progress * 100) + "%");
-                                TQMain.LOGGER.info(String.format("Time Remaining: %d minutes", timeRemaining));
+                                TQMain.LOGGER.info("{}%", String.format("Progress: %.2f", progress * 100));
+                                TQMain.LOGGER.info("Time Remaining: {} minutes", timeRemaining);
                                 Platform.runLater(() -> {
                                     progressLabel.setText("Progress: " + Math.round(progress * 100) + "%");
                                     timeLabel.setText("Time Remaining: " + finalTimeRemaining + " minutes");
@@ -370,17 +367,17 @@ public class TabController implements Initializable {
                                     String resp = tel.sendMIUCommand(command, term, COMMAND_TIMEOUT);
                                     if (resp.equals("Timeout")) {
                                         noResponses.add(term);
-                                        TQMain.LOGGER.warn(String.format("Unable to get response from %s after %d minutes", term, COMMAND_TIMEOUT / 1000 / 60));
+                                        TQMain.LOGGER.warn("Unable to get response from {} after {} minutes", term, COMMAND_TIMEOUT / 1000 / 60);
                                         Platform.runLater(() -> {
                                             TQMain.showMessage(String.format("Unable to get response from %s after %d minutes", term, COMMAND_TIMEOUT / 1000 / 60));
                                         });
                                     } else {
-                                        TQMain.LOGGER.debug("Response Received: " + resp);
+                                        TQMain.LOGGER.debug("Response Received: {}", resp);
                                     }
                                 } else {
                                     tel.sendCommand(command);
                                     // TODO: Prevent sleep after last command is issued
-                                    TQMain.LOGGER.info("Performing sleep for " + queueWait.getValue() * WAIT_MULTIPLIER + "ms");
+                                    TQMain.LOGGER.info("Performing sleep for {}ms", queueWait.getValue() * WAIT_MULTIPLIER);
                                     //sleeper.wait((targetMiu.equals("-1")) ? 0 : (long) queueWait.getValue() * WAIT_MULTIPLIER);
                                     Thread.sleep((targetMiu.equals("-1")) ? 0 : (long) queueWait.getValue() * WAIT_MULTIPLIER);
                                 }
@@ -392,12 +389,12 @@ public class TabController implements Initializable {
                             timeLabel.setText("");
                         });
                     }
-                    TQMain.LOGGER.info("Closing Connection for " + clientList.getValue());
+                    TQMain.LOGGER.info("Closing Connection for {}", clientList.getValue());
                     tel.close();
                     if (!noResponses.isEmpty()) {
-                        TQMain.LOGGER.warn("Timeout Nodes: " + Arrays.toString(noResponses.toArray()));
+                        TQMain.LOGGER.warn("Timeout Nodes: {}", Arrays.toString(noResponses.toArray()));
                         File jarPath = new File(System.getProperty("user.dir") + File.separator + "unresponsiveNodes.csv");
-                        TQMain.LOGGER.info("Logged timeout nodes to " + jarPath.getAbsolutePath());
+                        TQMain.LOGGER.info("Logged timeout nodes to {}", jarPath.getAbsolutePath());
                         StringBuilder append = new StringBuilder();
                         for (int i = 0; i < noResponses.size(); i++) {
                             append.append(noResponses.get(i));

@@ -41,9 +41,9 @@ public class JNAReg {
                 }
                 continue;
             }
-            TQMain.LOGGER.warn(String.format("Invalid Zenner PuTTY Session found %s @ (%s:%d)\n", key, host, port));
+            TQMain.LOGGER.warn("Invalid PuTTY Session found {} @ ({}:{})\n", key, host, port);
         }
-        TQMain.LOGGER.info(String.format("Finished querying PuTTY Sessions(%dms)\n", System.currentTimeMillis() - time));
+        TQMain.LOGGER.info("Finished querying PuTTY Sessions({}ms)\n", System.currentTimeMillis() - time);
         return ent;
     }
 

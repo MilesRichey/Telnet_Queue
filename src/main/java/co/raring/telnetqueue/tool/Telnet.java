@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -53,10 +52,12 @@ public class Telnet {
         this.host = host;
         this.port = port;
     }
+
     public boolean init() {
         return init(2000);
     }
-    public boolean init(int timeout)  {
+
+    public boolean init(int timeout) {
         try {
             this.sock = new Socket();
             this.sock.connect(new InetSocketAddress(this.host, this.port), timeout);
@@ -97,14 +98,15 @@ public class Telnet {
         out.print(comm + "\r\n");
         out.flush();
     }
-/*
-Example of interaction between command and MIU:
 
-rexec 2390137 "date"
+    /*
+    Example of interaction between command and MIU:
 
-[2390137] FRI 03/25/2022 21:20:02 (tz=-7) Y2K
+    rexec 2390137 "date"
 
-*/
+    [2390137] FRI 03/25/2022 21:20:02 (tz=-7) Y2K
+
+    */
     public String sendMIUCommand(String comm, String miu, long timeout) {
         sendCommand(comm);
         if (!miu.contains("\n")) {

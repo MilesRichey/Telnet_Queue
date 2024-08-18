@@ -1,40 +1,32 @@
 package co.raring.telnetqueue;
 
 import co.raring.telnetqueue.jna.JNAReg;
-import co.raring.telnetqueue.tool.LogViewAppender;
-import co.raring.telnetqueue.tool.Telnet;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class TQMain extends Application {
+    public static final Logger LOGGER = LogManager.getLogger(TQMain.class);
     // Debug Options
     private static final boolean QUERY = true; // TRUE=Query PuTTY Registry,FALSE=Use predefined utility configurations
     public static boolean ACTIVE = true; // Active status, if set to false then all running threads(queues) will stop
-    public static Logger LOGGER;
     public static Map<String, String> SESSIONS;
     public static List<Thread> QUEUES = new ArrayList<>();
 
 
     public static void main(String[] args) {
-        LOGGER = Logger.getLogger(TQMain.class);
-        //LOGGER.addAppender(new LogViewAppender());
-        LOGGER.setLevel(Level.TRACE);
-
         if (!QUERY || !System.getProperty("os.name").contains("Windows")) {
             // Predefined Utility configuration for testing purposes
             SESSIONS = Map.of(
@@ -55,7 +47,7 @@ public class TQMain extends Application {
      */
     public static void throwError(String content, Exception ex) {
         Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-        LOGGER.error("Showing error dialog(\"" + content + "\")", ex);
+        LOGGER.error("Showing error dialog(\"{}\")", content, ex);
         errorAlert.setContentText(content);
         errorAlert.showAndWait();
     }
@@ -67,7 +59,7 @@ public class TQMain extends Application {
      */
     public static void showMessage(String content) {
         Alert msgBox = new Alert(Alert.AlertType.INFORMATION);
-        LOGGER.debug("Showing informational dialog(\"" + content + "\")");
+        LOGGER.debug("Showing informational dialog(\"{}\")", content);
         //errorAlert.setHeaderText("File error");
         msgBox.setContentText(content);
         msgBox.showAndWait();
@@ -81,7 +73,7 @@ public class TQMain extends Application {
      */
     public static boolean showConfirmation(String content) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, content, ButtonType.YES, ButtonType.NO);
-        LOGGER.debug("Showing confirmation dialog(\"" + content + "\")");
+        LOGGER.debug("Showing confirmation dialog(\"{}\")", content);
         alert.showAndWait();
         return alert.getResult() == ButtonType.YES;
     }
@@ -98,7 +90,8 @@ public class TQMain extends Application {
         stage.getIcons().add(new Image(Objects.requireNonNull(TQMain.class.getResourceAsStream("zenner.png"))));
         stage.setOnCloseRequest((event) -> {
             for (Thread th : QUEUES) { //TODO: Add actual thread stops
-                TQMain.ACTIVE = false;
+                th.interrupt();
+                //TQMain.ACTIVE = false;
             }
         });
         stage.show();

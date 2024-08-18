@@ -36,12 +36,6 @@ public class QConfiguration {
     private int j = 0;
     private int z = 0;
 
-    public static void main(String... args) throws IOException {
-        QConfiguration c = new QConfiguration(new File("C:\\Users\\mrichey\\Dropbox (ZennerUSA)\\Richey-Miles\\Projects\\TelnetQueue\\src\\main\\resources\\exampleConfig.properties"));
-        System.out.println(c.toString());
-
-    }
-
     public QConfiguration() {
 
     }
@@ -61,6 +55,12 @@ public class QConfiguration {
         this.i = Integer.parseInt(this.config.getProperty("i"));
         this.j = Integer.parseInt(this.config.getProperty("j"));
         this.z = Integer.parseInt(this.config.getProperty("z"));
+    }
+
+    public static void main(String... args) throws IOException {
+        QConfiguration c = new QConfiguration(new File("C:\\Users\\mrichey\\Dropbox (ZennerUSA)\\Richey-Miles\\Projects\\TelnetQueue\\src\\main\\resources\\exampleConfig.properties"));
+        System.out.println(c);
+
     }
 
     /**
@@ -177,16 +177,15 @@ public class QConfiguration {
 
     @Override
     public String toString() {
-        return new StringBuilder("{\n")
-                .append("'client':").append("'").append(getClient()).append("',\n")
-                .append("'gw':").append("'").append(getGW()).append("',\n")
-                .append("'remainingNodes':").append(Arrays.toString(getMIUList())).append(",\n")
-                .append("'commands':").append(Arrays.toString(getCommands())).append(",\n")
-                .append("'responseBased':").append(isResponseBased()).append(",\n")
-                .append("'i':").append(getI()).append(",\n")
-                .append("'j':").append(getJ()).append(",\n")
-                .append("'z':").append(getZ())
-                .append("\n}")
-                .toString();
+        return "{\n" +
+                "'client':" + "'" + getClient() + "',\n" +
+                "'gw':" + "'" + getGW() + "',\n" +
+                "'remainingNodes':" + Arrays.toString(getMIUList()) + ",\n" +
+                "'commands':" + Arrays.toString(getCommands()) + ",\n" +
+                "'responseBased':" + isResponseBased() + ",\n" +
+                "'i':" + getI() + ",\n" +
+                "'j':" + getJ() + ",\n" +
+                "'z':" + getZ() +
+                "\n}";
     }
 }

@@ -27,6 +27,7 @@ public class FileHelper {
         }
         return fileContents.toString();
     }
+
     public static void appendFile(File file, String append) {
         try {
             file.createNewFile();
