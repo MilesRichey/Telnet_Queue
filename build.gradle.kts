@@ -1,7 +1,8 @@
 plugins {
     id("java")
     id("application")
-    id("org.beryx.jlink") version "2.26.0"
+    //id("org.beryx.jlink") version "3.0.1"
+    id("org.beryx.runtime") version "1.13.1"
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -63,7 +64,7 @@ tasks.jar {
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 // Still need to test below on Windows :jpackage
-jlink {
+/*jlink {
     // Directory for the custom JRE
     imageZip.set(project.file("${layout.buildDirectory}/distributions/${project.name}-${project.version}-runtime.zip"))
 
@@ -89,4 +90,4 @@ jlink {
         installerType = "exe"
         appVersion = project.version.toString()
     }
-}
+}*/
