@@ -184,6 +184,7 @@ public class TabController implements Initializable {
                         Desktop.getDesktop().edit(outputFile);
                         succ = true;
                     } catch (IOException ignored) {
+                        TQMain.throwError("Unable to open status file, located at " + outputFile.getAbsolutePath() + ".", null);
                     }
                 }
                 // If unable to open the file successfully, then display unable to open and list the file location

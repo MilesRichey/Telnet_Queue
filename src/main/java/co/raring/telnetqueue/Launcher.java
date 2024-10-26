@@ -1,6 +1,6 @@
 package co.raring.telnetqueue;
 
-public class App {
+public class Launcher {
     public static void main(String... args) {
         TQMain.main(args);
     }
