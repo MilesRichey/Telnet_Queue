@@ -73,7 +73,7 @@ runtime {
             else -> "png"
         }
         imageOptions.addAll(listOf("--icon", "src/main/resources/co/raring/telnetqueue/zenner.$imgType"))
-        installerOptions.addAll(listOf("--resource-dir", "src/main/resources", "--vendor", "TelnetQueue Group"))
+        installerOptions.addAll(listOf("--resource-dir", "src/main/resources", "--vendor", "Zenner USA"))
 
         when {
             currentOs.isWindows -> installerOptions.addAll(listOf("--win-per-user-install", "--win-dir-chooser", "--win-menu", "--win-shortcut"))

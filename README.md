@@ -85,6 +85,15 @@ After pressing _Execute_ there'll be a _Remaining Time_ label and a percentage.
 
 Starts sending commands to the given parameters
 
+# Build Directions
+- Requirements:
+  * Zulu(?) JDK 21.0.5
+  * Wix v3 Installed (for creating installer)
+- Creating Installer
+  * Run `gradlew jpackage` to create the executable
+- Running
+  * Run `gradlew run`
+
 # Changelog
 
 1.0.0:
@@ -129,15 +138,16 @@ Logging currently merges both Telnet Queue logs and response back from the conne
 * Added "Run Test" button to go through all PuTTY sessions, and output all non-operational sessions in a file.
 
 1.0.9 (WIP):
-* Added ability to save and open Telnet Queue configuration
 * Corrected issue with the Load File button being removed somehow
 * Updated JDK to 21
 * Migrated project from Maven to Gradle
 * Added jlink/jpackage into Gradle for creating a Windows executable
 * Updated all dependencies
 
+
 ## Plans
 In the future I plan on adding a few features:
 1. Improved logging screen/persistent logging
-2. ~Ability to Save and Open Telnet Queue configuration~
+2. Ability to Save and Open Telnet Queue configuration
 3. Add gateway/utility to the tab
+4. Investigate into properly stopping the program, especially when TQ is running (potentially save config)
